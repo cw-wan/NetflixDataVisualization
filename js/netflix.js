@@ -3,7 +3,7 @@ const ctx = {
     margin: {top: 60, right: 30, bottom: 20, left: 110},
     legend: {h: 70},
     distribution: {h: 90},
-    ridge_opacity: 0.9,
+    ridge_opacity: 0.85,
     imdb: {},
     tmdb: {},
     imdb_density: [],
@@ -19,7 +19,7 @@ function createScoreDistributionViz() {
         "translate(" + ctx.margin.left + "," + ctx.margin.top + ")");
     loadData(rootG);
 
-    document.getElementById('rankType').addEventListener('change', function() {
+    document.getElementById('rankType').addEventListener('change', function () {
         if (this.value === "alphabetical") {
             if (ctx.state === "Imdb") {
                 transitionToFixOrder(ctx.imdb_density, "IMDB");
@@ -34,7 +34,7 @@ function createScoreDistributionViz() {
             }
         }
     });
-    document.getElementById('score').addEventListener('change', function() {
+    document.getElementById('score').addEventListener('change', function () {
         if (this.value === "imdb") {
             if (ctx.state === "Tmdb") {
                 ctx.state = "Imdb";
@@ -176,6 +176,24 @@ function plotGenreImdbDistribution(rootG, data) {
         .attr("stroke-width", 0.5)
         .attr("d", function (d) {
             return lineGenerator(d.density);
+        })
+        .on("mouseover", (event, d) => {
+            d3.select(event.currentTarget)
+                .attr("stroke", "black")
+                .attr("stroke-width", 1.5)
+                .style("opacity", 1);
+            d3.select("#tooltip")
+                .style("display", "block")
+                .style("left", (event.pageX + 10) + "px")
+                .style("top", (event.pageY + 10) + "px")
+                .text("Mean " + Math.round(d.avg * 100) / 100);
+        })
+        .on("mouseout", (event, d) => {
+            d3.select(event.currentTarget)
+                .attr("stroke", "grey")
+                .attr("stroke-width", 0.5)
+                .style("opacity", ctx.ridge_opacity);
+            d3.select("#tooltip").style("display", "none");
         });
 
     // legend
