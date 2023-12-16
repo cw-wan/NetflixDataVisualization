@@ -1,5 +1,7 @@
 import pandas as pd
 
+THRESHOLD = 4
+
 # read raw data
 actors = pd.read_csv('data/credits.csv')
 shows = pd.read_csv('data/titles.csv')
@@ -25,10 +27,16 @@ for idx, row in actors.iterrows():
 for idx, row in shows.iterrows():
     id2title[row["id"]] = row["title"]
 
-# get the top 1000 actors/directors based the count of their works
 actor_list = [(actor_id, actor_name, len(actor2shows[actor_id]), actor_role) for actor_id, actor_name, actor_role in list(actor_list)]
-actor_list = sorted(actor_list, key=lambda x: x[2], reverse=True)[:1000]
-actor_ids = [actor[0] for actor in actor_list]
+actor_ids = [actor[0] for actor in actor_list if actor[2] >= THRESHOLD]
+
+for idx, row in actors.iterrows():
+    actor_id = row['person_id']
+    show_id = row['id']
+    if actor_id in actor_ids:
+        if show_id not in show2actors:
+            show2actors[show_id] = set()
+        show2actors[show_id].add(actor_id)
 
 # build the network of cooperation
 id2idx = dict()
@@ -40,11 +48,10 @@ for si, al in show2actors.items():
     al = list(al)
     for i in range(len(al) - 1):
         for j in range(i + 1, len(al)):
-            if al[i] in actor_ids and al[j] in actor_ids:
-                edge_id = str(al[i]) + "_" + str(al[j])
-                if edge_id not in edges:
-                    edges[edge_id] = set()
-                edges[edge_id].add(id2title[si])
+            edge_id = str(al[i]) + "_" + str(al[j])
+            if edge_id not in edges:
+                edges[edge_id] = set()
+            edges[edge_id].add(id2title[si])
 
 actor_relations = {
     "actor1": [],
@@ -54,8 +61,8 @@ actor_relations = {
 }
 
 for edge_id, shows in edges.items():
-    # only consider solid collaborations that involves more than 2 movies
-    if len(shows) > 2:
+    # only consider solid collaborations that involves more than 3 movies
+    if len(shows) >= THRESHOLD:
         actor_relations["actor1"].append(int(edge_id.split("_")[0]))
         actor_relations["actor2"].append(int(edge_id.split("_")[1]))
         actor_relations["shows"].append(", ".join(list(shows)))
