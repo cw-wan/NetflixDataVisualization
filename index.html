@@ -6,8 +6,8 @@
     <script type="text/javascript" src="js/d3.v7.min.js"></script>
     <script type="text/javascript" src="js/netflix.js"></script>
 </head>
-<body onload="createScoreDistributionViz()">
-<div id="genreImdb">
+<body onload="createCharlesVis()">
+<div id="genreImdbDistribution">
     <div id="tooltip" style="position: absolute; display: none; padding: 10px; background: rgba(0,0,0,0.6); color: #fff; border-radius: 4px; pointer-events: none;"></div>
     <form>
         <span>Score: </span><select id="score" name="score">
@@ -19,6 +19,8 @@
             <option value="alphabetical">Alphabetical</option>
         </select>
     </form>
+</div>
+<div id="actorsRelationship">
 </div>
 </body>
 </html>

@@ -1,6 +1,10 @@
 const ctx = {
-    w: 825, h: 490,
+    w: 825,
+    h: 490,
+    wr: 800,
+    hr: 800,
     margin: {top: 60, right: 30, bottom: 20, left: 110},
+    marginR: {top: 400, right: 60, bottom: 60, left: 400},
     legend: {h: 70},
     distribution: {h: 90},
     ridge_opacity: 0.85,
@@ -11,14 +15,20 @@ const ctx = {
     state: "Imdb"
 }
 
-function createScoreDistributionViz() {
-    let svgEl = d3.select("#genreImdb").append("svg");
+function createCharlesVis() {
+    // Visualization of actor relations
+    let svgRelationG = d3.select("#actorsRelationship").append("svg");
+    svgRelationG.attr("width", ctx.wr);
+    svgRelationG.attr("height", ctx.hr);
+    let rootRelationG = svgRelationG.append("g")
+        .attr("id", "rootRelationG")
+        .attr("transform", "translate(" + ctx.marginR.left + "," + ctx.marginR.top + ")");
+    // Visualization of Imdb/Tmdb score distribution over genres
+    let svgEl = d3.select("#genreImdbDistribution").append("svg");
     svgEl.attr("width", ctx.w);
     svgEl.attr("height", ctx.h);
-    let rootG = svgEl.append("g").attr("id", "rootG").attr("transform",
-        "translate(" + ctx.margin.left + "," + ctx.margin.top + ")");
-    loadData(rootG);
-
+    let rootG = svgEl.append("g").attr("id", "rootG").attr("transform", "translate(" + ctx.margin.left + "," + ctx.margin.top + ")");
+    loadData(rootG, rootRelationG);
     document.getElementById('rankType').addEventListener('change', function () {
         if (this.value === "alphabetical") {
             if (ctx.state === "Imdb") {
@@ -59,9 +69,22 @@ function createScoreDistributionViz() {
     });
 }
 
-function loadData(rootG) {
-    Promise.all([d3.csv("data/titles.csv"), d3.csv("data/credits.csv")]).then((data) => {
+function loadData(rootG, rootRelationG) {
+    Promise.all([d3.csv("data/titles.csv"),
+        d3.csv("data/selected_actors.csv"),
+        d3.csv("data/actor_relations.csv")]).then((data) => {
         let shows = data[0];
+        let actors = data[1];
+        let nodes = [];
+        actors.forEach((d) => {
+            let node = {
+                id: d["id"],
+                name: d["name"],
+                role: d["role"] === "ACTOR" ? 1 : 0
+            };
+            nodes.push(node);
+        });
+        let edges = data[2];
         let genreImdb = {};
         let genreTmdb = {};
         shows.forEach((d) => {
@@ -86,14 +109,101 @@ function loadData(rootG) {
         ctx.imdb = genreImdb;
         ctx.tmdb = genreTmdb
         plotGenreImdbDistribution(rootG, genreImdb);
+        // process nodes and links
+        let links = [];
+        edges.forEach((e) => {
+            let link = {
+                source: e["actor1"],
+                target: e["actor2"],
+                value: e["num"],
+                desc: e["shows"]
+            };
+            links.push(link);
+        });
+        plotActorRelation(rootRelationG, nodes, links);
     });
+}
+
+function plotActorRelation(rootG, nodes, links) {
+    // Create a simulation with several forces.
+    const simulation = d3.forceSimulation(nodes)
+        .force("link", d3.forceLink(links).id(d => d.id))
+        .force("charge", d3.forceManyBody())
+        .force("x", d3.forceX())
+        .force("y", d3.forceY());
+    // Add a line for each link, and a circle for each node.
+
+    // Specify the color scale.
+    const color = d3.scaleOrdinal(d3.schemeCategory10);
+
+    const link = rootG.append("g")
+        .attr("stroke", "#999")
+        .attr("stroke-opacity", 0.6)
+        .selectAll("line")
+        .data(links)
+        .join("line")
+        .attr("stroke-width", d => Math.sqrt(d.value));
+
+    const node = rootG.append("g")
+        .attr("stroke", "#fff")
+        .attr("stroke-width", 1.5)
+        .selectAll("circle")
+        .data(nodes)
+        .join("circle")
+        .attr("r", 5)
+        .attr("fill", d => color(d.role));
+
+    node.append("title")
+        .text(d => d.name);
+
+    link.append("title")
+        .text(d => d.desc);
+    
+    // Add a drag behavior.
+    // Add a drag behavior.
+    node.call(d3.drag()
+        .on("start", dragstarted)
+        .on("drag", dragged)
+        .on("end", dragended));
+
+    // Set the position attributes of links and nodes each time the simulation ticks.
+    simulation.on("tick", () => {
+        link
+            .attr("x1", d => d.source.x)
+            .attr("y1", d => d.source.y)
+            .attr("x2", d => d.target.x)
+            .attr("y2", d => d.target.y);
+
+        node
+            .attr("cx", d => d.x)
+            .attr("cy", d => d.y);
+    });
+
+    // Reheat the simulation when drag starts, and fix the subject position.
+    function dragstarted(event) {
+        if (!event.active) simulation.alphaTarget(0.3).restart();
+        event.subject.fx = event.subject.x;
+        event.subject.fy = event.subject.y;
+    }
+
+    // Update the subject (dragged node) position during drag.
+    function dragged(event) {
+        event.subject.fx = event.x;
+        event.subject.fy = event.y;
+    }
+
+    // Restore the target alpha so the simulation cools after dragging ends.
+    // Unfix the subject position now that it’s no longer being dragged.
+    function dragended(event) {
+        if (!event.active) simulation.alphaTarget(0);
+        event.subject.fx = null;
+        event.subject.fy = null;
+    }
 }
 
 function computeDistributionDensity(x, data, threshold) {
     let output = {
-        allDensity: [],
-        allAvg: [],
-        maxAllDensity: 0
+        allDensity: [], allAvg: [], maxAllDensity: 0
     };
     let kde = kernelDensityEstimator(kernelEpanechnikov(0.03), x.ticks(45));
     for (let genre of Object.keys(data)) {
