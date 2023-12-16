@@ -3,8 +3,11 @@ const ctx = {
     h: 490,
     wr: 700,
     hr: 700,
+    ws: 800,
+    hs: 800,
     margin: {top: 60, right: 30, bottom: 20, left: 110},
     marginR: {top: 350, right: 60, bottom: 60, left: 350},
+    marginS: {top: 60, right: 30, bottom: 60, left: 80},
     legend: {h: 70},
     distribution: {h: 90},
     ridge_opacity: 0.85,
@@ -12,7 +15,10 @@ const ctx = {
     tmdb: {},
     imdb_density: [],
     tmdb_density: [],
-    state: "Imdb"
+    state: "Imdb",
+    scatterScale: "linear",
+    movieShow: [],
+    scatterPlotOpacity: 0.85
 }
 
 function createVisChenwei() {
@@ -24,12 +30,32 @@ function createVisChenwei() {
     let rootRelationG = svgRelationG.append("g")
         .attr("id", "rootRelationG")
         .attr("transform", "translate(" + ctx.marginR.left + "," + ctx.marginR.top + ")");
+    // Visualization of correlation between popularity and review score
+    let svgScatterPlot = d3.select("#scatterPlotPopularityScore").append("svg");
+    svgScatterPlot.attr("width", ctx.ws);
+    svgScatterPlot.attr("height", ctx.hs);
+    let rootScatterPG = svgScatterPlot.append("g")
+        .attr("id", "rootScatterPlotPopRevG")
+        .attr("transform", "translate(" + ctx.marginS.left + "," + ctx.marginS.top + ")");
     // Visualization of Imdb/Tmdb score distribution over genres
     let svgEl = d3.select("#genreImdbDistribution").append("svg");
     svgEl.attr("width", ctx.w);
     svgEl.attr("height", ctx.h);
     let rootG = svgEl.append("g").attr("id", "rootDistributionG").attr("transform", "translate(" + ctx.margin.left + "," + ctx.margin.top + ")");
-    loadDataChenwei(rootG, rootRelationG);
+    loadDataChenwei(rootG, rootRelationG, rootScatterPG);
+    document.getElementById('scatterPlotPopRevScale').addEventListener('change', function () {
+        if (this.value === "linear") {
+            if (ctx.scatterScale === "log") {
+                ctx.scatterScale = "linear";
+                toggleScatterPlotPopRevScale("linear");
+            }
+        } else if (this.value === "log") {
+            if (ctx.scatterScale === "linear") {
+                ctx.scatterScale = "log";
+                toggleScatterPlotPopRevScale("log");
+            }
+        }
+    });
     document.getElementById('rankType').addEventListener('change', function () {
         if (this.value === "alphabetical") {
             if (ctx.state === "Imdb") {
@@ -70,7 +96,7 @@ function createVisChenwei() {
     });
 }
 
-function loadDataChenwei(rootG, rootRelationG) {
+function loadDataChenwei(rootG, rootRelationG, rootScatterPG) {
     Promise.all([d3.csv("data/titles.csv"),
         d3.csv("data/selected_actors.csv"),
         d3.csv("data/actor_relations.csv")]).then((data) => {
@@ -88,6 +114,7 @@ function loadDataChenwei(rootG, rootRelationG) {
         let edges = data[2];
         let genreImdb = {};
         let genreTmdb = {};
+        let showPR = [];
         shows.forEach((d) => {
             let genres = JSON.parse(d["genres"].replace(/'/g, '\"'));
             for (let genre of genres) {
@@ -106,6 +133,16 @@ function loadDataChenwei(rootG, rootRelationG) {
                     }
                 }
             }
+            if (d["imdb_score"] !== "" && d["tmdb_score"] !== "" && d["tmdb_popularity"] !== "") {
+                let item = {
+                    pop: d["tmdb_popularity"],
+                    score: d["imdb_score"],
+                    year: d["release_year"],
+                    type: d["type"],
+                    title: d["title"]
+                };
+                showPR.push(item);
+            }
         });
         ctx.imdb = genreImdb;
         ctx.tmdb = genreTmdb
@@ -122,7 +159,234 @@ function loadDataChenwei(rootG, rootRelationG) {
             links.push(link);
         });
         plotActorRelation(rootRelationG, nodes, links);
+        showPR = showPR.filter(d => (d.pop >= 1));
+        ctx.movieShow = showPR;
+        plotScatterPlotPopRev(rootScatterPG, showPR);
     });
+}
+
+function plotScatterPlotPopRev(rootG, data) {
+    console.log("Plotting Scatter Plot Popularity Score ...");
+    let height = ctx.hs - ctx.marginS.bottom - ctx.marginS.top;
+    let width = ctx.ws - ctx.marginS.left - 150;
+    let x = d3.scaleLinear()
+        .domain([0, 10])
+        .range([0, width]);
+    let y = d3.scaleLinear()
+        .domain([1, 2500])
+        .range([height, 0]);
+    rootG.append("g")
+        .attr("id", "scatterPlotPopRevX")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x).ticks(10));
+    rootG.append("text")
+        .attr("text-anchor", "end")
+        .attr("x", width / 2 + ctx.marginS.left - 20)
+        .attr("y", height + ctx.marginS.top - 25)
+        .text("Review Score");
+    rootG.append("g")
+        .attr("id", "scatterPlotPopRevY")
+        .call(d3.axisLeft(y));
+    rootG.append("text")
+        .attr("text-anchor", "end")
+        .attr("transform", "rotate(-90)")
+        .attr("y", -45)
+        .attr("x", -height / 2 + 40)
+        .text("Popularity");
+
+    // Add gridlines
+    function makeGridlinesX() {
+        return d3.axisBottom(x)
+            .ticks(10)
+    }
+
+    function makeGridlinesY() {
+        return d3.axisLeft(y)
+            .ticks(10)
+    }
+
+    // Add the X gridlines
+    rootG.append("g")
+        .attr("class", "x-grid")
+        .attr("transform", `translate(0,${height})`)
+        .attr("fill", "grey")
+        .style("opacity", 0.2)
+        .call(makeGridlinesX()
+            .tickSize(-height)
+            .tickFormat("")
+        )
+    // Add the Y gridlines
+    rootG.append("g")
+        .attr("class", "y-grid")
+        .attr("fill", "grey")
+        .style("opacity", 0.2)
+        .call(makeGridlinesY()
+            .tickSize(-width)
+            .tickFormat("")
+        );
+    let colorProj = d3.scaleLinear()
+        .domain([d3.min(data.map(d => d.year)), d3.max(data.map(d => d.year))])
+        .range([0, 1]);
+    let color = d3.scaleSequential(d3.interpolateBlues);
+    let plotG = rootG.append("g").attr("id", "scatterPlotPopRevPlots");
+    // Add scattered plots
+    // Define the shapes based on style
+    let showShape = d3.symbol().type(d3.symbolCircle).size(25);
+    let filmShape = d3.symbol().type(d3.symbolCross).size(25);
+    // Bind data and create one dot per data point in the "SHOW" group
+    let show_data = data.filter(d => (d.type === "SHOW"));
+    let movie_data = data.filter(d => (d.type === "MOVIE"));
+    let showPlots = plotG.selectAll("path")
+        .data(show_data)
+        .enter()
+        .append("path")
+        .attr("class", "scatter-plot-show")
+        .attr("d", showShape)
+        .attr("transform", function (d) {
+            return `translate(${x(d.score)},${y(d.pop)})`;
+        })
+        .style("fill", function (d) {
+            return color(colorProj(d.year));
+        })
+        .style("opacity", ctx.scatterPlotOpacity)
+        .on("mouseover", (event, d) => {
+            d3.select(event.currentTarget)
+                .style("opacity", 1);
+            d3.select("#tooltip")
+                .style("display", "block")
+                .style("left", (event.pageX + 10) + "px")
+                .style("top", (event.pageY + 10) + "px")
+                .text(d.title);
+        })
+        .on("mouseout", (event) => {
+            d3.select(event.currentTarget)
+                .attr("stroke", "grey")
+                .attr("stroke-width", 0)
+                .style("opacity", ctx.scatterPlotOpacity);
+            d3.select("#tooltip").style("display", "none");
+        });
+    let moviePlots = plotG.selectAll("path")
+        .data(movie_data)
+        .enter()
+        .append("path")
+        .attr("class", "scatter-plot-movie")
+        .attr("d", filmShape)
+        .attr("transform", function (d) {
+            return `translate(${x(d.score)},${y(d.pop)})`;
+        })
+        .style("fill", function (d) {
+            return color(colorProj(d.year));
+        })
+        .style("opacity", ctx.scatterPlotOpacity)
+        .on("mouseover", (event, d) => {
+            d3.select(event.currentTarget)
+                .style("opacity", 1);
+            d3.select("#tooltip")
+                .style("display", "block")
+                .style("left", (event.pageX + 10) + "px")
+                .style("top", (event.pageY + 10) + "px")
+                .text(d.title);
+        })
+        .on("mouseout", (event) => {
+            d3.select(event.currentTarget)
+                .attr("stroke", "grey")
+                .attr("stroke-width", 0)
+                .style("opacity", ctx.scatterPlotOpacity);
+            d3.select("#tooltip").style("display", "none");
+        });
+    // legend
+    let legendG = rootG.append("g")
+        .attr("id", "scatterPlotPopRecLegend")
+        .attr("transform", "translate(600, 300) rotate(-90)")
+
+    // Define the gradient
+    let defs = legendG.append("defs");
+    let linearGradient = defs.append("linearGradient")
+        .attr("id", "scatterPlotLinearGradient");
+
+    const n = 10; // Number of gradient stops
+    for (let i = 0; i <= n; i++) {
+        linearGradient.append("stop")
+            .attr("offset", `${i / n * 100}%`)
+            .attr("stop-color", color(i / n));
+    }
+
+    // Draw the color legend
+    legendG.append("rect")
+        .attr("x", 0)
+        .attr("y", 5)
+        .attr("width", 300)
+        .attr("height", 20)
+        .style("fill", "url(#scatterPlotLinearGradient)");
+    let legendX = d3.scaleLinear()
+        .domain([d3.min(data.map(d => d.year)), d3.max(data.map(d => d.year))])
+        .range([0, 300]);
+    legendG.append("g")
+        .attr("id", "scatterPlotPopRecLegendX")
+        .attr("transform", "translate(0, 25)")
+        .call(d3.axisBottom(legendX).ticks(4).tickFormat(d3.format("d")))
+        .selectAll("text")
+        .attr("transform", "translate(13, 33) rotate(90)")
+        .style("text-anchor", "end");
+    // Add a caption
+    legendG.append("text")
+        .attr("x", 5)
+        .attr("y", 20)
+        .attr("transform", "rotate(90)")
+        .style("font-size", "14px")
+        .style("font-family", "Arial")
+        .text("Release Year");
+}
+
+function toggleScatterPlotPopRevScale(scale) {
+    console.log("Changing Scale to " + scale + "!")
+    let rootG = d3.select("#rootScatterPlotPopRevG");
+    let data = ctx.movieShow;
+    let height = ctx.hs - ctx.marginS.bottom - ctx.marginS.top;
+    let width = ctx.ws - ctx.marginS.left - 150;
+    let x = d3.scaleLinear()
+        .domain([0, 10])
+        .range([0, width]);
+    let y;
+    if (scale === "linear") {
+        y = d3.scaleLinear()
+            .domain([1, 2500])
+            .range([height, 0]);
+    } else if (scale === "log") {
+        y = d3.scaleLog()
+            .domain([1, 2500])
+            .range([height, 0])
+            .nice();
+    }
+    // Select the y-axis element if it exists
+    let yAxis = rootG.selectAll("#scatterPlotPopRevY").data([0]);
+
+    // Transition the y-axis to the new scale
+    yAxis.transition()
+        .duration(1000) // Duration of the transition in milliseconds
+        .call(d3.axisLeft(y).ticks(null, ".1s")); // Create the y-axis with the new log scale
+
+    function makeGridlinesY() {
+        return d3.axisLeft(y)
+            .ticks(null, ".1s")
+            .tickSize(-width)
+            .tickFormat("");
+    }
+
+    // Select the existing gridlines
+    let yGridlines = rootG.selectAll(".y-grid");
+    // Enter + update
+    yGridlines
+        .transition()
+        .duration(1000)
+        .call(makeGridlinesY());
+    rootG.selectAll(".scatter-plot-show, .scatter-plot-movie")
+        .transition()
+        .duration(1000)
+        .attr("transform", function (d) {
+            return `translate(${x(d.score)},${y(d.pop)})`;
+        });
+
 }
 
 function plotActorRelation(rootG, nodes, links) {
@@ -160,7 +424,7 @@ function plotActorRelation(rootG, nodes, links) {
 
     link.append("title")
         .text(d => d.desc);
-    
+
     // Add a drag behavior.
     // Add a drag behavior.
     node.call(d3.drag()

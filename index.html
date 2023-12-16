@@ -20,7 +20,8 @@
 <body onload="createVis()">
 <!-- Author: Chenwei Wan -->
 <div id="genreImdbDistribution">
-    <p>Distribution of Imdb/Tmdb scores over different genres. Ranking can be based on mean score or alphabetic order.</p>
+    <p>Distribution of Imdb/Tmdb scores over different genres. Ranking can be based on mean score or alphabetic
+        order.</p>
     <div id="tooltip"
          style="position: absolute; display: none; padding: 10px; background: rgba(0,0,0,0.6); color: #fff; border-radius: 4px; pointer-events: none;"></div>
     <form style="margin-bottom: 15px; margin-left: 240px;">
@@ -36,6 +37,15 @@
 </div>
 <p>Collaboration relationships between popular actors and directors.</p>
 <div id="actorsRelationship">
+</div>
+<p>Use scatterplot to visualize the relationship between popularity and review score. </p>
+<div id="scatterPlotPopularityScore">
+    <form style="margin-bottom: 15px; margin-left: 240px;">
+        <span>Scale: </span><select id="scatterPlotPopRevScale" name="scale">
+        <option value="linear">Linear</option>
+        <option value="log">Log</option>
+    </select>
+    </form>
 </div>
 
 <!-- Author: Wen Yang -->
