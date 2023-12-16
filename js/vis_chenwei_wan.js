@@ -236,7 +236,7 @@ function plotScatterPlotPopRev(rootG, data) {
     // Bind data and create one dot per data point in the "SHOW" group
     let show_data = data.filter(d => (d.type === "SHOW"));
     let movie_data = data.filter(d => (d.type === "MOVIE"));
-    let showPlots = plotG.selectAll("path")
+    plotG.selectAll("path")
         .data(show_data)
         .enter()
         .append("path")
@@ -265,7 +265,7 @@ function plotScatterPlotPopRev(rootG, data) {
                 .style("opacity", ctx.scatterPlotOpacity);
             d3.select("#tooltip").style("display", "none");
         });
-    let moviePlots = plotG.selectAll("path")
+    plotG.selectAll("path")
         .data(movie_data)
         .enter()
         .append("path")
@@ -341,7 +341,6 @@ function plotScatterPlotPopRev(rootG, data) {
 function toggleScatterPlotPopRevScale(scale) {
     console.log("Changing Scale to " + scale + "!")
     let rootG = d3.select("#rootScatterPlotPopRevG");
-    let data = ctx.movieShow;
     let height = ctx.hs - ctx.marginS.bottom - ctx.marginS.top;
     let width = ctx.ws - ctx.marginS.left - 150;
     let x = d3.scaleLinear()

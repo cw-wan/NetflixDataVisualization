@@ -25,11 +25,11 @@
     <div id="tooltip"
          style="position: absolute; display: none; padding: 10px; background: rgba(0,0,0,0.6); color: #fff; border-radius: 4px; pointer-events: none;"></div>
     <form style="margin-bottom: 15px; margin-left: 240px;">
-        <span>Score: </span><select id="score" name="score">
+        <span>Score: </span><label for="score"></label><select id="score" name="score">
         <option value="imdb">IMDB</option>
         <option value="tmdb">TMDB</option>
     </select>
-        <span> Sort by: </span><select id="rankType" name="Sort by">
+        <span> Sort by: </span><label for="rankType"></label><select id="rankType" name="Sort by">
         <option value="mean">Mean Score</option>
         <option value="alphabetical">Alphabetical</option>
     </select>
@@ -41,7 +41,7 @@
 <p>Use scatterplot to visualize the relationship between popularity and review score. </p>
 <div id="scatterPlotPopularityScore">
     <form style="margin-bottom: 15px; margin-left: 240px;">
-        <span>Scale: </span><select id="scatterPlotPopRevScale" name="scale">
+        <span>Scale: </span><label for="scatterPlotPopRevScale"></label><select id="scatterPlotPopRevScale" name="scale">
         <option value="linear">Linear</option>
         <option value="log">Log</option>
     </select>
@@ -61,8 +61,6 @@
     <g></g>
     <label for="attributeSelect">Select Attribute:</label>
     <select id="attributeSelect"></select>
-    </g>
-    <!-- add a slider for number of bins -->
     <g class="slider-container">
         <label for="binsSlider" class="slider-label">Number of Bins:</label>
         <!-- <input type="range" id="binsSlider" min="1" max = "71" value="10"> -->
