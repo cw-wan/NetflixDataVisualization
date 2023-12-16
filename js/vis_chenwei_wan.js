@@ -1,10 +1,10 @@
 const ctx = {
     w: 825,
     h: 490,
-    wr: 800,
-    hr: 800,
+    wr: 700,
+    hr: 700,
     margin: {top: 60, right: 30, bottom: 20, left: 110},
-    marginR: {top: 400, right: 60, bottom: 60, left: 400},
+    marginR: {top: 350, right: 60, bottom: 60, left: 350},
     legend: {h: 70},
     distribution: {h: 90},
     ridge_opacity: 0.85,
@@ -15,7 +15,8 @@ const ctx = {
     state: "Imdb"
 }
 
-function createCharlesVis() {
+function createVisChenwei() {
+    console.log("creating vis by Chenwei ... ")
     // Visualization of actor relations
     let svgRelationG = d3.select("#actorsRelationship").append("svg");
     svgRelationG.attr("width", ctx.wr);
@@ -27,8 +28,8 @@ function createCharlesVis() {
     let svgEl = d3.select("#genreImdbDistribution").append("svg");
     svgEl.attr("width", ctx.w);
     svgEl.attr("height", ctx.h);
-    let rootG = svgEl.append("g").attr("id", "rootG").attr("transform", "translate(" + ctx.margin.left + "," + ctx.margin.top + ")");
-    loadData(rootG, rootRelationG);
+    let rootG = svgEl.append("g").attr("id", "rootDistributionG").attr("transform", "translate(" + ctx.margin.left + "," + ctx.margin.top + ")");
+    loadDataChenwei(rootG, rootRelationG);
     document.getElementById('rankType').addEventListener('change', function () {
         if (this.value === "alphabetical") {
             if (ctx.state === "Imdb") {
@@ -69,7 +70,7 @@ function createCharlesVis() {
     });
 }
 
-function loadData(rootG, rootRelationG) {
+function loadDataChenwei(rootG, rootRelationG) {
     Promise.all([d3.csv("data/titles.csv"),
         d3.csv("data/selected_actors.csv"),
         d3.csv("data/actor_relations.csv")]).then((data) => {
@@ -125,6 +126,7 @@ function loadData(rootG, rootRelationG) {
 }
 
 function plotActorRelation(rootG, nodes, links) {
+    console.log("Plotting Actor Relations ...");
     // Create a simulation with several forces.
     const simulation = d3.forceSimulation(nodes)
         .force("link", d3.forceLink(links).id(d => d.id))
@@ -229,7 +231,7 @@ function plotGenreImdbDistribution(rootG, data) {
         .range([0, ctx.w - ctx.margin.left - ctx.margin.right]);
     let height = ctx.h - ctx.margin.bottom - ctx.margin.top - ctx.legend.h;
     rootG.append("g")
-        .attr("id", "ridge-x-axis")
+        .attr("id", "dis-ridge-x-axis")
         .attr("transform", "translate(0," + height + ")")
         .call(d3.axisBottom(x).ticks(10));
 
@@ -246,7 +248,7 @@ function plotGenreImdbDistribution(rootG, data) {
         .range([0, ctx.h - ctx.margin.top - ctx.margin.bottom - ctx.legend.h])
         .paddingInner(1);
     rootG.append("g")
-        .attr("id", "ridge-y-axis")
+        .attr("id", "dis-ridge-y-axis")
         .call(d3.axisLeft(yGenre))
         .selectAll("text")
         .style("font-size", "14px"); // Set the font size as desired;
@@ -298,7 +300,7 @@ function plotGenreImdbDistribution(rootG, data) {
                 .style("top", (event.pageY + 10) + "px")
                 .text("Mean " + Math.round(d.avg * 100) / 100);
         })
-        .on("mouseout", (event, d) => {
+        .on("mouseout", (event) => {
             d3.select(event.currentTarget)
                 .attr("stroke", "grey")
                 .attr("stroke-width", 0.5)
@@ -334,7 +336,7 @@ function plotGenreImdbDistribution(rootG, data) {
         .domain([d3.min(allAvg), d3.median(allAvg), d3.max(allAvg)])
         .range([0, 150, 300]);
     legendG.append("g")
-        .attr("id", "legend-x-axis")
+        .attr("id", "dis-legend-x-axis")
         .attr("transform", "translate(0, 25)")
         .call(d3.axisBottom(legendX).ticks(4));
 
@@ -375,11 +377,12 @@ function kernelEpanechnikov(k) {
 }
 
 function transitionTo(density, name) {
+    console.log("Transitioning distribution ridges ... ");
     let allDensity = density.allDensity;
     let allAvg = density.allAvg;
     let maxAllDensity = density.maxAllDensity;
 
-    let rootG = d3.select("#rootG")
+    let rootG = d3.select("#rootDistributionG")
 
     let x = d3.scaleLinear()
         .domain([0, 10.2])
@@ -390,11 +393,11 @@ function transitionTo(density, name) {
         .domain(allDensity.map(d => d.key))
         .range([0, ctx.h - ctx.margin.top - ctx.margin.bottom - ctx.legend.h])
         .paddingInner(1);
-    rootG.select("#ridge-y-axis")
+    rootG.select("#dis-ridge-y-axis")
         .transition()
         .duration(1000)
         .call(d3.axisLeft(yGenre));
-    rootG.select("#ridge-y-axis")
+    rootG.select("#dis-ridge-y-axis")
         .selectAll("text")
         .style("font-size", "14px"); // Adjust font size if needed
 
@@ -439,7 +442,7 @@ function transitionTo(density, name) {
     let legendX = d3.scaleLinear()
         .domain([d3.min(allAvg), d3.median(allAvg), d3.max(allAvg)])
         .range([0, 150, 300]);
-    rootG.select("#legend-x-axis")
+    rootG.select("#dis-legend-x-axis")
         .transition()
         .duration(1000)
         .attr("transform", "translate(0, 25)")

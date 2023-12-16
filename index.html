@@ -1,26 +1,112 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Netflix Data Visualization</title>
     <script type="text/javascript" src="js/d3.v7.min.js"></script>
-    <script type="text/javascript" src="js/netflix.js"></script>
+    <script type="text/javascript" src="js/vis_chenwei_wan.js"></script>
+    <script type="text/javascript" src="js/vis_wen_yang.js"></script>
+    <style>
+        svg {
+            display: block;
+            border: 1px solid #444;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
 </head>
-<body onload="createCharlesVis()">
+
+<body onload="createVis()">
+<!-- Author: Chenwei Wan -->
 <div id="genreImdbDistribution">
-    <div id="tooltip" style="position: absolute; display: none; padding: 10px; background: rgba(0,0,0,0.6); color: #fff; border-radius: 4px; pointer-events: none;"></div>
-    <form>
+    <p>Distribution of Imdb/Tmdb scores over different genres. Ranking can be based on mean score or alphabetic order.</p>
+    <div id="tooltip"
+         style="position: absolute; display: none; padding: 10px; background: rgba(0,0,0,0.6); color: #fff; border-radius: 4px; pointer-events: none;"></div>
+    <form style="margin-bottom: 15px; margin-left: 240px;">
         <span>Score: </span><select id="score" name="score">
-            <option value="imdb">IMDB</option>
-            <option value="tmdb">TMDB</option>
-        </select>
+        <option value="imdb">IMDB</option>
+        <option value="tmdb">TMDB</option>
+    </select>
         <span> Sort by: </span><select id="rankType" name="Sort by">
-            <option value="mean">Mean Score</option>
-            <option value="alphabetical">Alphabetical</option>
-        </select>
+        <option value="mean">Mean Score</option>
+        <option value="alphabetical">Alphabetical</option>
+    </select>
     </form>
 </div>
+<p>Collaboration relationships between popular actors and directors.</p>
 <div id="actorsRelationship">
 </div>
+
+<!-- Author: Wen Yang -->
+<div id="histogram" style="text-align: center;">
+    <p style="text-align: left;">
+        Firstly, we decide to analyse the histogram of the numerical attributes in our dataset, inculding "imdb score",
+        "tmdb score", "imdb votes", "release year", "runtime", and "seasons". <br>
+        From the plot of release year, we found that most of the TV series or shows are produced in recent years,
+        especially after 2019.
+    </p>
+    <p>This is the histogram, please select an attribute or/and the number of bins </p>
+    <!-- add a selecting list -->
+    <g></g>
+    <label for="attributeSelect">Select Attribute:</label>
+    <select id="attributeSelect"></select>
+    </g>
+    <!-- add a slider for number of bins -->
+    <g class="slider-container">
+        <label for="binsSlider" class="slider-label">Number of Bins:</label>
+        <!-- <input type="range" id="binsSlider" min="1" max = "71" value="10"> -->
+        <input type="range" id="binsSlider" min="1" value="10">
+        <span id="binsValue">10</span>
+    </g>
+</div>
+<div id="histogram_categorical">
+    <p>This is the count by genres. The most popular genres of productions are comedy and drama, both of them have more
+        than 2000 production in our Netflix datasest. The genres with least number of productions are war, sports and
+        western, it can be concluded that Netflix is more focused on comedy or drama rather than western, war and sport
+        type of content. This could be the result of the influence from costumers' interest and from the producers'
+        working field.</p>
+</div>
+<div id="treemap_categorical">
+    <p>This is the count by genres presented in a tree map. </p>
+</div>
+<div id="GenreByTime">
+    <p style="text-align: left;">
+        Afterwards, the percentage of production for each genre by time is analysed. Time range is from 1953 to 2021,
+        since there isn't any data for 1949 to 1953 this period is ignored when we process the data. <br>
+        Some genres has been produced throughout time, such as crime or drama; some genres started to be produced later,
+        such as animation or science fictions, they begins to make this type of productions after the application of
+        computers in film industry or TV series studios. Some genres only appears during some specific time period, for
+        example, most western genres are added to Netflix database around 1960s due to their representation of cultural
+        sentiments.
+    </p>
+</div>
+<div id="GenreNet">
+    <p style="text-align: left;">
+        a network of genres
+    </p>
+</div>
+<div id="histogram_CountCountry">
+    <p style="text-align: left;">
+        This is the count by Country, the top 30 countires with most number of productions in Netflix dataset are
+        plotted. The united states produced most, more than 3 times than the second one (India), and United Kingdom (
+        Great Britain) ranked number 3. Since Netflix is an American company, it is expected that it covers more
+        productions from US and English-speaking countries.
+    </p>
+</div>
+<div id="correlation">
+    <p>This is the correlation between imdb score, tmdb score, release year, runtime and
+        tmdb popularity. Release year is slightly negatively correlated to both imbd score and runtime. It is reasonable
+        that consumers prefer recently released films or shows, and due to the technical constraints, very old films and
+        show has less runtime than recent productions.<br>
+    </p>
+</div>
+
+<script>
+    function createVis() {
+        createVisChenwei();
+        createVizWen()
+    }
+</script>
 </body>
 </html>
