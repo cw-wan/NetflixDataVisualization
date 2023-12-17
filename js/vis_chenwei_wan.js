@@ -3,7 +3,7 @@ const ctx = {
     h: 490,
     wr: 700,
     hr: 700,
-    ws: 800,
+    ws: 820,
     hs: 800,
     margin: {top: 60, right: 30, bottom: 20, left: 110},
     marginR: {top: 350, right: 60, bottom: 60, left: 350},
@@ -18,7 +18,8 @@ const ctx = {
     state: "Imdb",
     scatterScale: "linear",
     movieShow: [],
-    scatterPlotOpacity: 0.85
+    scatterPlotOpacity: 0.85,
+    scatterPlotSize: 23
 }
 
 function createVisChenwei() {
@@ -135,7 +136,7 @@ function loadDataChenwei(rootG, rootRelationG, rootScatterPG) {
             }
             if (d["imdb_score"] !== "" && d["tmdb_score"] !== "" && d["tmdb_popularity"] !== "") {
                 let item = {
-                    pop: d["tmdb_popularity"],
+                    pop: parseFloat(d["tmdb_popularity"]),
                     score: d["imdb_score"],
                     year: d["release_year"],
                     type: d["type"],
@@ -173,7 +174,7 @@ function plotScatterPlotPopRev(rootG, data) {
         .domain([0, 10])
         .range([0, width]);
     let y = d3.scaleLinear()
-        .domain([1, 2500])
+        .domain([1, d3.max(data.map(d => d.pop))])
         .range([height, 0]);
     rootG.append("g")
         .attr("id", "scatterPlotPopRevX")
@@ -231,8 +232,8 @@ function plotScatterPlotPopRev(rootG, data) {
     let plotG = rootG.append("g").attr("id", "scatterPlotPopRevPlots");
     // Add scattered plots
     // Define the shapes based on style
-    let showShape = d3.symbol().type(d3.symbolCircle).size(25);
-    let filmShape = d3.symbol().type(d3.symbolCross).size(25);
+    let showShape = d3.symbol().type(d3.symbolCircle).size(ctx.scatterPlotSize);
+    let filmShape = d3.symbol().type(d3.symbolCross).size(ctx.scatterPlotSize);
     // Bind data and create one dot per data point in the "SHOW" group
     let show_data = data.filter(d => (d.type === "SHOW"));
     let movie_data = data.filter(d => (d.type === "MOVIE"));
@@ -332,14 +333,42 @@ function plotScatterPlotPopRev(rootG, data) {
     legendG.append("text")
         .attr("x", 5)
         .attr("y", 20)
-        .attr("transform", "rotate(90)")
+        .attr("transform", "translate(326, 0) rotate(90)")
         .style("font-size", "14px")
-        .style("font-family", "Arial")
         .text("Release Year");
+
+    let typeG = rootG.append("g")
+        .attr("id", "scatterPlotPopRevType")
+        .attr("transform", "translate(610, 350)");
+
+    let showType = d3.symbol().type(d3.symbolCircle).size(55);
+    let filmType = d3.symbol().type(d3.symbolCross).size(55);
+
+    typeG.append("text")
+        .text("Type")
+        .style("font-size", "14px")
+        .attr("transform", "translate(-5, -14)");
+    typeG.append("path")
+        .attr("d", showType)
+        .style("fill", color(colorProj(1989)))
+        .attr("transform", "translate(0, 0)");
+    typeG.append("text")
+        .text("Show")
+        .style("font-size", "12px")
+        .attr("transform", "translate(10, 4)");
+    typeG.append("path")
+        .attr("d", filmType)
+        .style("fill", color(colorProj(1989)))
+        .attr("transform", "translate(0, 17)");
+    typeG.append("text")
+        .text("Movie")
+        .style("font-size", "12px")
+        .attr("transform", "translate(10, 21)");
 }
 
 function toggleScatterPlotPopRevScale(scale) {
     console.log("Changing Scale to " + scale + "!")
+    let data = ctx.movieShow;
     let rootG = d3.select("#rootScatterPlotPopRevG");
     let height = ctx.hs - ctx.marginS.bottom - ctx.marginS.top;
     let width = ctx.ws - ctx.marginS.left - 150;
@@ -349,11 +378,11 @@ function toggleScatterPlotPopRevScale(scale) {
     let y;
     if (scale === "linear") {
         y = d3.scaleLinear()
-            .domain([1, 2500])
+            .domain([1, d3.max(data.map(d => d.pop))])
             .range([height, 0]);
     } else if (scale === "log") {
         y = d3.scaleLog()
-            .domain([1, 2500])
+            .domain([1, d3.max(data.map(d => d.pop))])
             .range([height, 0])
             .nice();
     }
