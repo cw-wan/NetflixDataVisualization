@@ -1,13 +1,14 @@
-const ctx = {
+const ctxChenwei = {
     w: 825,
     h: 490,
     wr: 700,
     hr: 700,
     ws: 820,
-    hs: 800,
+    hs: 970,
+    hs_hist: 170,
     margin: {top: 60, right: 30, bottom: 20, left: 110},
     marginR: {top: 350, right: 60, bottom: 60, left: 350},
-    marginS: {top: 60, right: 30, bottom: 60, left: 80},
+    marginS: {top: 60, right: 60, bottom: 20, left: 80},
     legend: {h: 70},
     distribution: {h: 90},
     ridge_opacity: 0.85,
@@ -17,80 +18,81 @@ const ctx = {
     tmdb_density: [],
     state: "Imdb",
     scatterScale: "linear",
-    movieShow: [],
+    movieShowData: [],
     scatterPlotOpacity: 0.85,
-    scatterPlotSize: 23
+    scatterPlotSize: 27,
+    scatterPlotHide: NaN
 }
 
 function createVisChenwei() {
     console.log("creating vis by Chenwei ... ")
     // Visualization of actor relations
     let svgRelationG = d3.select("#actorsRelationship").append("svg");
-    svgRelationG.attr("width", ctx.wr);
-    svgRelationG.attr("height", ctx.hr);
+    svgRelationG.attr("width", ctxChenwei.wr);
+    svgRelationG.attr("height", ctxChenwei.hr);
     let rootRelationG = svgRelationG.append("g")
         .attr("id", "rootRelationG")
-        .attr("transform", "translate(" + ctx.marginR.left + "," + ctx.marginR.top + ")");
+        .attr("transform", "translate(" + ctxChenwei.marginR.left + "," + ctxChenwei.marginR.top + ")");
     // Visualization of correlation between popularity and review score
     let svgScatterPlot = d3.select("#scatterPlotPopularityScore").append("svg");
-    svgScatterPlot.attr("width", ctx.ws);
-    svgScatterPlot.attr("height", ctx.hs);
+    svgScatterPlot.attr("width", ctxChenwei.ws);
+    svgScatterPlot.attr("height", ctxChenwei.hs);
     let rootScatterPG = svgScatterPlot.append("g")
         .attr("id", "rootScatterPlotPopRevG")
-        .attr("transform", "translate(" + ctx.marginS.left + "," + ctx.marginS.top + ")");
+        .attr("transform", "translate(" + ctxChenwei.marginS.left + "," + ctxChenwei.marginS.top + ")");
     // Visualization of Imdb/Tmdb score distribution over genres
     let svgEl = d3.select("#genreImdbDistribution").append("svg");
-    svgEl.attr("width", ctx.w);
-    svgEl.attr("height", ctx.h);
-    let rootG = svgEl.append("g").attr("id", "rootDistributionG").attr("transform", "translate(" + ctx.margin.left + "," + ctx.margin.top + ")");
+    svgEl.attr("width", ctxChenwei.w);
+    svgEl.attr("height", ctxChenwei.h);
+    let rootG = svgEl.append("g").attr("id", "rootDistributionG").attr("transform", "translate(" + ctxChenwei.margin.left + "," + ctxChenwei.margin.top + ")");
     loadDataChenwei(rootG, rootRelationG, rootScatterPG);
     document.getElementById('scatterPlotPopRevScale').addEventListener('change', function () {
         if (this.value === "linear") {
-            if (ctx.scatterScale === "log") {
-                ctx.scatterScale = "linear";
+            if (ctxChenwei.scatterScale === "log") {
+                ctxChenwei.scatterScale = "linear";
                 toggleScatterPlotPopRevScale("linear");
             }
         } else if (this.value === "log") {
-            if (ctx.scatterScale === "linear") {
-                ctx.scatterScale = "log";
+            if (ctxChenwei.scatterScale === "linear") {
+                ctxChenwei.scatterScale = "log";
                 toggleScatterPlotPopRevScale("log");
             }
         }
     });
     document.getElementById('rankType').addEventListener('change', function () {
         if (this.value === "alphabetical") {
-            if (ctx.state === "Imdb") {
-                transitionToFixOrder(ctx.imdb_density, "IMDB");
-            } else if (ctx.state === "Tmdb") {
-                transitionToFixOrder(ctx.tmdb_density, "TMDB");
+            if (ctxChenwei.state === "Imdb") {
+                transitionToFixOrder(ctxChenwei.imdb_density, "IMDB");
+            } else if (ctxChenwei.state === "Tmdb") {
+                transitionToFixOrder(ctxChenwei.tmdb_density, "TMDB");
             }
         } else if (this.value === "mean") {
-            if (ctx.state === "Imdb") {
-                transitionToMeanOrder(ctx.imdb_density, "IMDB");
-            } else if (ctx.state === "Tmdb") {
-                transitionToMeanOrder(ctx.tmdb_density, "TMDB");
+            if (ctxChenwei.state === "Imdb") {
+                transitionToMeanOrder(ctxChenwei.imdb_density, "IMDB");
+            } else if (ctxChenwei.state === "Tmdb") {
+                transitionToMeanOrder(ctxChenwei.tmdb_density, "TMDB");
             }
         }
     });
     document.getElementById('score').addEventListener('change', function () {
         if (this.value === "imdb") {
-            if (ctx.state === "Tmdb") {
-                ctx.state = "Imdb";
+            if (ctxChenwei.state === "Tmdb") {
+                ctxChenwei.state = "Imdb";
                 let rankType = document.getElementById("rankType").value;
                 if (rankType === "alphabetical") {
-                    transitionToFixOrder(ctx.imdb_density, "IMDB")
+                    transitionToFixOrder(ctxChenwei.imdb_density, "IMDB")
                 } else if (rankType === "mean") {
-                    transitionToMeanOrder(ctx.imdb_density, "IMDB")
+                    transitionToMeanOrder(ctxChenwei.imdb_density, "IMDB")
                 }
             }
         } else if (this.value === "tmdb") {
-            if (ctx.state === "Imdb") {
-                ctx.state = "Tmdb";
+            if (ctxChenwei.state === "Imdb") {
+                ctxChenwei.state = "Tmdb";
                 let rankType = document.getElementById("rankType").value;
                 if (rankType === "alphabetical") {
-                    transitionToFixOrder(ctx.tmdb_density, "TMDB")
+                    transitionToFixOrder(ctxChenwei.tmdb_density, "TMDB")
                 } else if (rankType === "mean") {
-                    transitionToMeanOrder(ctx.tmdb_density, "TMDB")
+                    transitionToMeanOrder(ctxChenwei.tmdb_density, "TMDB")
                 }
             }
         }
@@ -145,8 +147,8 @@ function loadDataChenwei(rootG, rootRelationG, rootScatterPG) {
                 showPR.push(item);
             }
         });
-        ctx.imdb = genreImdb;
-        ctx.tmdb = genreTmdb
+        ctxChenwei.imdb = genreImdb;
+        ctxChenwei.tmdb = genreTmdb
         plotGenreImdbDistribution(rootG, genreImdb);
         // process nodes and links
         let links = [];
@@ -161,15 +163,15 @@ function loadDataChenwei(rootG, rootRelationG, rootScatterPG) {
         });
         plotActorRelation(rootRelationG, nodes, links);
         showPR = showPR.filter(d => (d.pop >= 1));
-        ctx.movieShow = showPR;
+        ctxChenwei.movieShowData = JSON.parse(JSON.stringify(showPR));
         plotScatterPlotPopRev(rootScatterPG, showPR);
     });
 }
 
 function plotScatterPlotPopRev(rootG, data) {
     console.log("Plotting Scatter Plot Popularity Score ...");
-    let height = ctx.hs - ctx.marginS.bottom - ctx.marginS.top;
-    let width = ctx.ws - ctx.marginS.left - 150;
+    let height = ctxChenwei.hs - ctxChenwei.marginS.bottom - ctxChenwei.marginS.top - ctxChenwei.hs_hist;
+    let width = ctxChenwei.ws - ctxChenwei.marginS.left - 150;
     let x = d3.scaleLinear()
         .domain([0, 10])
         .range([0, width]);
@@ -182,8 +184,8 @@ function plotScatterPlotPopRev(rootG, data) {
         .call(d3.axisBottom(x).ticks(10));
     rootG.append("text")
         .attr("text-anchor", "end")
-        .attr("x", width / 2 + ctx.marginS.left - 20)
-        .attr("y", height + ctx.marginS.top - 25)
+        .attr("x", width / 2 + ctxChenwei.marginS.left - 20)
+        .attr("y", height + ctxChenwei.marginS.top - 25)
         .text("Review Score");
     rootG.append("g")
         .attr("id", "scatterPlotPopRevY")
@@ -232,12 +234,12 @@ function plotScatterPlotPopRev(rootG, data) {
     let plotG = rootG.append("g").attr("id", "scatterPlotPopRevPlots");
     // Add scattered plots
     // Define the shapes based on style
-    let showShape = d3.symbol().type(d3.symbolCircle).size(ctx.scatterPlotSize);
-    let filmShape = d3.symbol().type(d3.symbolCross).size(ctx.scatterPlotSize);
+    let showShape = d3.symbol().type(d3.symbolCircle).size(ctxChenwei.scatterPlotSize);
+    let filmShape = d3.symbol().type(d3.symbolCross).size(ctxChenwei.scatterPlotSize);
     // Bind data and create one dot per data point in the "SHOW" group
     let show_data = data.filter(d => (d.type === "SHOW"));
     let movie_data = data.filter(d => (d.type === "MOVIE"));
-    plotG.selectAll("path")
+    plotG.selectAll(".scatter-plot-show")
         .data(show_data)
         .enter()
         .append("path")
@@ -249,24 +251,21 @@ function plotScatterPlotPopRev(rootG, data) {
         .style("fill", function (d) {
             return color(colorProj(d.year));
         })
-        .style("opacity", ctx.scatterPlotOpacity)
+        .style("opacity", ctxChenwei.scatterPlotOpacity)
         .on("mouseover", (event, d) => {
-            d3.select(event.currentTarget)
-                .style("opacity", 1);
-            d3.select("#tooltip")
-                .style("display", "block")
-                .style("left", (event.pageX + 10) + "px")
-                .style("top", (event.pageY + 10) + "px")
-                .text(d.title);
+            console.log(d.type)
+            if (ctxChenwei.scatterPlotHide !== "SHOW") {
+                d3.select("#tooltip")
+                    .style("display", "block")
+                    .style("left", (event.pageX + 10) + "px")
+                    .style("top", (event.pageY + 10) + "px")
+                    .text(d.title);
+            }
         })
         .on("mouseout", (event) => {
-            d3.select(event.currentTarget)
-                .attr("stroke", "grey")
-                .attr("stroke-width", 0)
-                .style("opacity", ctx.scatterPlotOpacity);
             d3.select("#tooltip").style("display", "none");
         });
-    plotG.selectAll("path")
+    plotG.selectAll(".scatter-plot-movie")
         .data(movie_data)
         .enter()
         .append("path")
@@ -278,21 +277,17 @@ function plotScatterPlotPopRev(rootG, data) {
         .style("fill", function (d) {
             return color(colorProj(d.year));
         })
-        .style("opacity", ctx.scatterPlotOpacity)
+        .style("opacity", ctxChenwei.scatterPlotOpacity)
         .on("mouseover", (event, d) => {
-            d3.select(event.currentTarget)
-                .style("opacity", 1);
-            d3.select("#tooltip")
-                .style("display", "block")
-                .style("left", (event.pageX + 10) + "px")
-                .style("top", (event.pageY + 10) + "px")
-                .text(d.title);
+            if (ctxChenwei.scatterPlotHide !== "MOVIE") {
+                d3.select("#tooltip")
+                    .style("display", "block")
+                    .style("left", (event.pageX + 10) + "px")
+                    .style("top", (event.pageY + 10) + "px")
+                    .text(d.title);
+            }
         })
         .on("mouseout", (event) => {
-            d3.select(event.currentTarget)
-                .attr("stroke", "grey")
-                .attr("stroke-width", 0)
-                .style("opacity", ctx.scatterPlotOpacity);
             d3.select("#tooltip").style("display", "none");
         });
     // legend
@@ -364,14 +359,82 @@ function plotScatterPlotPopRev(rootG, data) {
         .text("Movie")
         .style("font-size", "12px")
         .attr("transform", "translate(10, 21)");
+
+    let hisG = rootG.append("g")
+        .attr("id", "scatterPlotPopRevHisG")
+        .attr("transform", `translate(0, ${height + 40})`)
+
+    let countByType = data.reduce(function (acc, currentValue) {
+        if (!acc[currentValue.type]) {
+            acc[currentValue.type] = 0;
+        }
+        acc[currentValue.type]++;
+        return acc;
+    }, {});
+    let dataForBarChart = Object.keys(countByType).map(function (type) {
+        return {type: type, count: countByType[type]};
+    });
+
+    let wh = ctxChenwei.ws - ctxChenwei.marginS.left - ctxChenwei.marginS.right;
+    let hh = ctxChenwei.hs_hist - ctxChenwei.marginS.bottom - 40;
+    let yh = d3.scaleBand()
+        .domain(dataForBarChart.map(d => d.type))
+        .rangeRound([0, hh])
+        .padding(0.3);
+    let xh = d3.scaleLinear()
+        .domain([0, d3.max(dataForBarChart.map(d => d.count))])
+        .range([0, wh]);
+    hisG.append('g')
+        .attr("id", "scatterPlotHistX")
+        .attr('transform', 'translate(0,' + hh + ')')
+        .call(d3.axisBottom(xh).ticks(10));
+    hisG.append('g')
+        .call(d3.axisLeft(yh));
+    let colorH = d3.scaleOrdinal()
+        .domain(dataForBarChart.map(d => d.type))
+        .range(d3.schemeTableau10);
+    hisG.selectAll('.bar')
+        .data(dataForBarChart)
+        .enter().append('rect')
+        .attr('class', 'bar')
+        .attr('x', 0)
+        .attr('y', d => yh(d.type))
+        .attr('width', d => (xh(d.count)))
+        .attr('height', yh.bandwidth())
+        .attr('fill', d => colorH(d.type))
+        .on("click", function (event, d) {
+            if (d.type === "SHOW") {
+                ctxChenwei.scatterPlotHide = "MOVIE";
+                d3.selectAll(".scatter-plot-show")
+                    .style("opacity", ctxChenwei.scatterPlotOpacity);
+                d3.selectAll(".scatter-plot-movie")
+                    .style("opacity", 0);
+            } else if (d.type === "MOVIE") {
+                ctxChenwei.scatterPlotHide = "SHOW";
+                d3.selectAll(".scatter-plot-show")
+                    .style("opacity", 0);
+                d3.selectAll(".scatter-plot-movie")
+                    .style("opacity", ctxChenwei.scatterPlotOpacity);
+            }
+        })
+        .on("mouseover", (event, d) => {
+            d3.select("#tooltip")
+                .style("display", "block")
+                .style("left", (event.pageX + 10) + "px")
+                .style("top", (event.pageY + 10) + "px")
+                .text(d.count);
+        })
+        .on("mouseout", (event) => {
+            d3.select("#tooltip").style("display", "none");
+        });
 }
 
 function toggleScatterPlotPopRevScale(scale) {
     console.log("Changing Scale to " + scale + "!")
-    let data = ctx.movieShow;
+    let data = ctxChenwei.movieShowData;
     let rootG = d3.select("#rootScatterPlotPopRevG");
-    let height = ctx.hs - ctx.marginS.bottom - ctx.marginS.top;
-    let width = ctx.ws - ctx.marginS.left - 150;
+    let height = ctxChenwei.hs - ctxChenwei.marginS.bottom - ctxChenwei.marginS.top - ctxChenwei.hs_hist;
+    let width = ctxChenwei.ws - ctxChenwei.marginS.left - 150;
     let x = d3.scaleLinear()
         .domain([0, 10])
         .range([0, width]);
@@ -408,13 +471,22 @@ function toggleScatterPlotPopRevScale(scale) {
         .transition()
         .duration(1000)
         .call(makeGridlinesY());
-    rootG.selectAll(".scatter-plot-show, .scatter-plot-movie")
+    let show_data = data.filter(d => (d.type === "SHOW"));
+    let movie_data = data.filter(d => (d.type === "MOVIE"));
+    rootG.selectAll(".scatter-plot-show")
+        .data(show_data)
         .transition()
         .duration(1000)
         .attr("transform", function (d) {
             return `translate(${x(d.score)},${y(d.pop)})`;
         });
-
+    rootG.selectAll(".scatter-plot-movie")
+        .data(movie_data)
+        .transition()
+        .duration(1000)
+        .attr("transform", function (d) {
+            return `translate(${x(d.score)},${y(d.pop)})`;
+        });
 }
 
 function plotActorRelation(rootG, nodes, links) {
@@ -520,24 +592,24 @@ function computeDistributionDensity(x, data, threshold) {
 function plotGenreImdbDistribution(rootG, data) {
     let x = d3.scaleLinear()
         .domain([0, 10.2])
-        .range([0, ctx.w - ctx.margin.left - ctx.margin.right]);
-    let height = ctx.h - ctx.margin.bottom - ctx.margin.top - ctx.legend.h;
+        .range([0, ctxChenwei.w - ctxChenwei.margin.left - ctxChenwei.margin.right]);
+    let height = ctxChenwei.h - ctxChenwei.margin.bottom - ctxChenwei.margin.top - ctxChenwei.legend.h;
     rootG.append("g")
         .attr("id", "dis-ridge-x-axis")
         .attr("transform", "translate(0," + height + ")")
         .call(d3.axisBottom(x).ticks(10));
 
     let density = computeDistributionDensity(x, data, 100);
-    ctx.imdb_density = density;
-    let data2 = ctx.tmdb;
-    ctx.tmdb_density = computeDistributionDensity(x, data2, 100);
+    ctxChenwei.imdb_density = density;
+    let data2 = ctxChenwei.tmdb;
+    ctxChenwei.tmdb_density = computeDistributionDensity(x, data2, 100);
     let allDensity = density.allDensity;
     let allAvg = density.allAvg;
     let maxAllDensity = density.maxAllDensity;
 
     let yGenre = d3.scaleBand()
         .domain(allDensity.map(d => d.key))
-        .range([0, ctx.h - ctx.margin.top - ctx.margin.bottom - ctx.legend.h])
+        .range([0, ctxChenwei.h - ctxChenwei.margin.top - ctxChenwei.margin.bottom - ctxChenwei.legend.h])
         .paddingInner(1);
     rootG.append("g")
         .attr("id", "dis-ridge-y-axis")
@@ -547,7 +619,7 @@ function plotGenreImdbDistribution(rootG, data) {
 
     let densityScale = d3.scaleLinear()
         .domain([0, maxAllDensity])
-        .range([0, -ctx.distribution.h]);
+        .range([0, -ctxChenwei.distribution.h]);
 
     // color scale
     let contrast = d3.scaleLinear()
@@ -576,7 +648,7 @@ function plotGenreImdbDistribution(rootG, data) {
             return colorScale(contrast(d.avg))
         })
         .attr("stroke", "grey")
-        .style("opacity", ctx.ridge_opacity)
+        .style("opacity", ctxChenwei.ridge_opacity)
         .attr("stroke-width", 0.5)
         .attr("d", function (d) {
             return lineGenerator(d.density);
@@ -596,14 +668,14 @@ function plotGenreImdbDistribution(rootG, data) {
             d3.select(event.currentTarget)
                 .attr("stroke", "grey")
                 .attr("stroke-width", 0.5)
-                .style("opacity", ctx.ridge_opacity);
+                .style("opacity", ctxChenwei.ridge_opacity);
             d3.select("#tooltip").style("display", "none");
         });
 
     // legend
     let legendG = rootG.append("g")
         .attr("id", "avgScoreLegend")
-        .attr("transform", "translate(0, " + (ctx.h - ctx.margin.bottom - ctx.margin.top - 30) + ")");
+        .attr("transform", "translate(0, " + (ctxChenwei.h - ctxChenwei.margin.bottom - ctxChenwei.margin.top - 30) + ")");
 
     // Define the gradient
     let defs = legendG.append("defs");
@@ -642,7 +714,7 @@ function plotGenreImdbDistribution(rootG, data) {
 
     // Add description
     let textG = rootG.append("g")
-        .attr("transform", "translate(500, " + (ctx.h - ctx.margin.bottom - ctx.margin.top - 30) + ")")
+        .attr("transform", "translate(500, " + (ctxChenwei.h - ctxChenwei.margin.bottom - ctxChenwei.margin.top - 30) + ")")
     textG.append("text")
         .attr("id", "desc")
         .attr("x", 0)
@@ -678,12 +750,12 @@ function transitionTo(density, name) {
 
     let x = d3.scaleLinear()
         .domain([0, 10.2])
-        .range([0, ctx.w - ctx.margin.left - ctx.margin.right]);
+        .range([0, ctxChenwei.w - ctxChenwei.margin.left - ctxChenwei.margin.right]);
 
     // transform y-axis
     let yGenre = d3.scaleBand()
         .domain(allDensity.map(d => d.key))
-        .range([0, ctx.h - ctx.margin.top - ctx.margin.bottom - ctx.legend.h])
+        .range([0, ctxChenwei.h - ctxChenwei.margin.top - ctxChenwei.margin.bottom - ctxChenwei.legend.h])
         .paddingInner(1);
     rootG.select("#dis-ridge-y-axis")
         .transition()
@@ -696,7 +768,7 @@ function transitionTo(density, name) {
     // transform ridge graph
     let densityScale = d3.scaleLinear()
         .domain([0, maxAllDensity])
-        .range([0, -ctx.distribution.h]);
+        .range([0, -ctxChenwei.distribution.h]);
     // color scale
     let contrast = d3.scaleLinear()
         .domain([d3.min(allAvg), d3.median(allAvg), d3.max(allAvg)])
@@ -724,7 +796,7 @@ function transitionTo(density, name) {
             return colorScale(contrast(d.avg))
         })
         .attr("stroke", "grey")
-        .style("opacity", ctx.ridge_opacity)
+        .style("opacity", ctxChenwei.ridge_opacity)
         .attr("stroke-width", 0.5)
         .attr("d", function (d) {
             return lineGenerator(d.density);
