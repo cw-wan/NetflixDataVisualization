@@ -5,23 +5,29 @@
 ### Collaborative Relationship
 
 As to the modelling of collaborative relationships between actors and 
-directors, we first introduce our data-mining strategy.
-
-We define 'popularity' for actors and directors based 
-on their participation in a minimum of four movies or shows. We then 
-establish a network to map collaboration relationships, exclusively 
-considering 'strong collaborations' characterized by at least four 
-joint projects.
+directors, we first introduce our data-mining strategy. We define 
+'popularity' for actors and directors based on their participation 
+in a minimum of four movies or shows. We then establish a network to 
+map collaboration relationships, exclusively considering 'strong 
+collaborations' characterized by at least four joint projects.
 
 In our network visualization, directors are represented by orange 
 nodes, while actors are depicted with blue nodes. The strength of 
 each collaborative link is quantified by the number of joint projects
 and visually represented by the stroke of the edge.
 
-Given the presence of multiple disjoint subgraphs within the network, 
-we employ a disjoint force-directed graph approach, which enables us 
-to maintain the visibility of separate subgraphs within a single 
-viewport, facilitating comprehensive analysis.
+Given the presence of multiple disjoint subgraphs within the network,
+we employ a disjoint force-directed graph approach, which enables us
+to maintain the visibility of separate subgraphs within a single
+viewport, facilitating comprehensive analysis. Further enhancing the 
+utility of this visualization, we have integrated an interactive 
+feature: when a user hovers over any node or link in the graph, 
+a tooltip window is triggered. This window provides detailed 
+information, such as the name of the actor or director represented 
+by a node, or the complete list of collaborative projects associated 
+with a link between two nodes. This interactive component of the 
+visualization gives users a deeper understanding of the collaborative 
+dynamics within the network.
 
 ![collaboration.png](collaboration.png)
 

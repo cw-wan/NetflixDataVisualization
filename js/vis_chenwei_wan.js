@@ -508,7 +508,17 @@ function plotActorRelation(rootG, nodes, links) {
         .selectAll("line")
         .data(links)
         .join("line")
-        .attr("stroke-width", d => Math.sqrt(d.value));
+        .attr("stroke-width", d => Math.sqrt(d.value))
+        .on("mouseover", (event, d) => {
+            d3.select("#tooltip")
+                .style("display", "block")
+                .style("left", (event.pageX + 10) + "px")
+                .style("top", (event.pageY + 10) + "px")
+                .text(d.desc);
+        })
+        .on("mouseout", (event) => {
+            d3.select("#tooltip").style("display", "none");
+        });
 
     const node = rootG.append("g")
         .attr("stroke", "#fff")
@@ -517,13 +527,18 @@ function plotActorRelation(rootG, nodes, links) {
         .data(nodes)
         .join("circle")
         .attr("r", 5)
-        .attr("fill", d => color(d.role));
-
-    node.append("title")
-        .text(d => d.name);
-
-    link.append("title")
-        .text(d => d.desc);
+        .attr("fill", d => color(d.role))
+        .on("mouseover", (event, d) => {
+            let role = d.role === 1 ? "Actor" : "Director";
+            d3.select("#tooltip")
+                .style("display", "block")
+                .style("left", (event.pageX + 10) + "px")
+                .style("top", (event.pageY + 10) + "px")
+                .text(d.name + ", " + role);
+        })
+        .on("mouseout", (event) => {
+            d3.select("#tooltip").style("display", "none");
+        });
 
     // Add a drag behavior.
     // Add a drag behavior.

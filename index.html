@@ -8,6 +8,10 @@
     <script type="text/javascript" src="js/vis_chenwei_wan.js"></script>
     <script type="text/javascript" src="js/vis_wen_yang.js"></script>
     <style>
+        html {
+            font-family: 'Arial', sans-serif;
+        }
+
         svg {
             display: block;
             border: 1px solid #444;
@@ -16,14 +20,33 @@
         }
 
         p {
-            text-align: left;
-            margin-left: 15%;
-            margin-right: 15%;
+            font-family: 'Arial', sans-serif;
+            font-size: 16px;
+            color: #333333;
+            line-height: 1.6;
+            text-align: justify;
+            padding-left: 12%;
+            padding-right: 12%;
+        }
+
+        h1 {
+            font-family: 'Helvetica Neue', sans-serif;
+            font-size: 40px;
+            color: #2A2A2A;
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 30px;
+            padding: 10px 0;
+            background: linear-gradient(to right, #6DD5FA, #FF758C);
+            border-radius: 5px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
 
 <body onload="createVis()">
+<h1>Data Visualization for Netflix TV Shows and Movies</h1>
 <!-- Author: Chenwei Wan -->
 <div id="genreImdbDistribution">
     <p>In this section, we employ a ridgeline plot to elucidate the
@@ -31,9 +54,8 @@
         visualization is enhanced by a diverging color scheme, which is
         aligned with the mean review scores to distinctly highlight genres
         with comparatively higher or lower ratings. These ratings are
-        aggregated from two prominent film review platforms: IMDb and TMDb.
-        <br>
-        Furthermore, the plot offers two distinct sorting options for users:
+        aggregated from two prominent film review platforms: IMDb and TMDb.</p>
+    <p>Furthermore, the plot offers two distinct sorting options for users:
         an alphabetical arrangement of genres and an ordering based on their
         mean scores. Enhanced interactivity is a pivotal feature of this
         visualization. Specifically, when users hover over any section of
@@ -56,23 +78,27 @@
     </form>
 </div>
 <p>As to the modelling of collaborative relationships between actors and
-    directors, we first introduce our data-mining strategy.
-    <br>
-    We define 'popularity' for actors and directors based
-    on their participation in a minimum of four movies or shows. We then
-    establish a network to map collaboration relationships, exclusively
-    considering 'strong collaborations' characterized by at least four
-    joint projects.
-    <br>
-    In our network visualization, directors are represented by orange
+    directors, we first introduce our data-mining strategy. We define
+    'popularity' for actors and directors based on their participation
+    in a minimum of four movies or shows. We then establish a network to
+    map collaboration relationships, exclusively considering 'strong
+    collaborations' characterized by at least four joint projects.</p>
+<p>In our network visualization, directors are represented by orange
     nodes, while actors are depicted with blue nodes. The strength of
     each collaborative link is quantified by the number of joint projects
-    and visually represented by the stroke of the edge.
-    <br>
-    Given the presence of multiple disjoint subgraphs within the network,
+    and visually represented by the stroke of the edge.Given the presence
+    of multiple disjoint subgraphs within the network,
     we employ a disjoint force-directed graph approach, which enables us
     to maintain the visibility of separate subgraphs within a single
-    viewport, facilitating comprehensive analysis.</p>
+    viewport, facilitating comprehensive analysis. Further enhancing the
+    utility of this visualization, we have integrated an interactive
+    feature: when a user hovers over any node or link in the graph,
+    a tooltip window is triggered. This window provides detailed
+    information, such as the name of the actor or director represented
+    by a node, or the complete list of collaborative projects associated
+    with a link between two nodes. This interactive component of the
+    visualization gives users a deeper understanding of the collaborative
+    dynamics within the network.</p>
 <div id="actorsRelationship">
 </div>
 <p>In this section, we present a scatterplot to analyze the correlation
@@ -82,9 +108,8 @@
     between linear and logarithmic, enhancing the visual interpretability
     of the data. The scatterplot is enriched with a linear color scheme,
     which corresponds to the release year of the media content. Distinct
-    shapes are utilized to differentiate between movies and shows.
-    <br>
-    To further aid in the comparative analysis of movies and shows, a
+    shapes are utilized to differentiate between movies and shows.</p>
+<p>To further aid in the comparative analysis of movies and shows, a
     histogram is displayed beneath the scatterplot. This histogram shows
     the count of different Netflix media types. Interactivity is a
     key feature here: when users select either of the bars in the
@@ -106,7 +131,7 @@
 
 <!-- Author: Wen Yang -->
 <div id="histogram" style="text-align: center;">
-    <p style="text-align: left;">
+    <p>
         Firstly, we decide to analyse the histogram of the numerical attributes in our dataset, inculding "imdb score",
         "tmdb score", "imdb votes", "release year", "runtime", and "seasons". <br>
         From the plot of release year, we found that most of the TV series or shows are produced in recent years,
@@ -135,7 +160,7 @@
     <p>This is the count by genres presented in a tree map. </p>
 </div>
 <div id="GenreByTime">
-    <p style="text-align: left;">
+    <p>
         Afterwards, the percentage of production for each genre by time is analysed. Time range is from 1953 to 2021,
         since there isn't any data for 1949 to 1953 this period is ignored when we process the data. <br>
         Some genres has been produced throughout time, such as crime or drama; some genres started to be produced later,
@@ -146,12 +171,12 @@
     </p>
 </div>
 <div id="GenreNet">
-    <p style="text-align: left;">
+    <p>
         a network of genres
     </p>
 </div>
 <div id="histogram_CountCountry">
-    <p style="text-align: left;">
+    <p>
         This is the count by Country, the top 30 countires with most number of productions in Netflix dataset are
         plotted. The united states produced most, more than 3 times than the second one (India), and United Kingdom (
         Great Britain) ranked number 3. Since Netflix is an American company, it is expected that it covers more
