@@ -4,11 +4,11 @@ const ctxChenwei = {
     wr: 700,
     hr: 700,
     ws: 820,
-    hs: 970,
+    hs: 950,
     hs_hist: 170,
     margin: {top: 60, right: 30, bottom: 20, left: 110},
     marginR: {top: 350, right: 60, bottom: 60, left: 350},
-    marginS: {top: 60, right: 60, bottom: 20, left: 80},
+    marginS: {top: 40, right: 60, bottom: 20, left: 80},
     legend: {h: 70},
     distribution: {h: 90},
     ridge_opacity: 0.85,
@@ -185,7 +185,7 @@ function plotScatterPlotPopRev(rootG, data) {
     rootG.append("text")
         .attr("text-anchor", "end")
         .attr("x", width / 2 + ctxChenwei.marginS.left - 20)
-        .attr("y", height + ctxChenwei.marginS.top - 25)
+        .attr("y", height + ctxChenwei.marginS.top - 5)
         .text("Review Score");
     rootG.append("g")
         .attr("id", "scatterPlotPopRevY")
@@ -392,7 +392,7 @@ function plotScatterPlotPopRev(rootG, data) {
         .call(d3.axisLeft(yh));
     let colorH = d3.scaleOrdinal()
         .domain(dataForBarChart.map(d => d.type))
-        .range(d3.schemeTableau10);
+        .range(d3.schemeAccent);
     hisG.selectAll('.bar')
         .data(dataForBarChart)
         .enter().append('rect')

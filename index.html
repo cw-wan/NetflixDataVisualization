@@ -14,17 +14,37 @@
             margin-left: auto;
             margin-right: auto;
         }
+
+        p {
+            text-align: left;
+            margin-left: 15%;
+            margin-right: 15%;
+        }
     </style>
 </head>
 
 <body onload="createVis()">
 <!-- Author: Chenwei Wan -->
 <div id="genreImdbDistribution">
-    <p>Distribution of Imdb/Tmdb scores over different genres. Ranking can be based on mean score or alphabetic
-        order.</p>
+    <p>In this section, we employ a ridgeline plot to elucidate the
+        distribution of review scores across various genres. This
+        visualization is enhanced by a diverging color scheme, which is
+        aligned with the mean review scores to distinctly highlight genres
+        with comparatively higher or lower ratings. These ratings are
+        aggregated from two prominent film review platforms: IMDb and TMDb.
+        <br>
+        Furthermore, the plot offers two distinct sorting options for users:
+        an alphabetical arrangement of genres and an ordering based on their
+        mean scores. Enhanced interactivity is a pivotal feature of this
+        visualization. Specifically, when users hover over any section of
+        the density plot, the corresponding area is accentuated through a
+        change in opacity, an emboldening of the ridgeline, and a display of
+        the genre’s mean score. This interactive element is designed to
+        provide an informative user experience, facilitating a deeper
+        understanding of the data.</p>
     <div id="tooltip"
          style="position: absolute; display: none; padding: 10px; background: rgba(0,0,0,0.6); color: #fff; border-radius: 4px; pointer-events: none;"></div>
-    <form style="margin-bottom: 15px; margin-left: 240px;">
+    <form style="margin-bottom: 15px; text-align: center;">
         <span>Score: </span><label for="score"></label><select id="score" name="score">
         <option value="imdb">IMDB</option>
         <option value="tmdb">TMDB</option>
@@ -35,12 +55,47 @@
     </select>
     </form>
 </div>
-<p>Collaboration relationships between popular actors and directors.</p>
+<p>As to the modelling of collaborative relationships between actors and
+    directors, we first introduce our data-mining strategy.
+    <br>
+    We define 'popularity' for actors and directors based
+    on their participation in a minimum of four movies or shows. We then
+    establish a network to map collaboration relationships, exclusively
+    considering 'strong collaborations' characterized by at least four
+    joint projects.
+    <br>
+    In our network visualization, directors are represented by orange
+    nodes, while actors are depicted with blue nodes. The strength of
+    each collaborative link is quantified by the number of joint projects
+    and visually represented by the stroke of the edge.
+    <br>
+    Given the presence of multiple disjoint subgraphs within the network,
+    we employ a disjoint force-directed graph approach, which enables us
+    to maintain the visibility of separate subgraphs within a single
+    viewport, facilitating comprehensive analysis.</p>
 <div id="actorsRelationship">
 </div>
-<p>Use scatterplot to visualize the relationship between popularity and review score. </p>
+<p>In this section, we present a scatterplot to analyze the correlation
+    between popularity and review scores of media content. Considering
+    the significant variation in the distribution of popularity data,
+    the scatterplot is equipped with a scale that users can toggle
+    between linear and logarithmic, enhancing the visual interpretability
+    of the data. The scatterplot is enriched with a linear color scheme,
+    which corresponds to the release year of the media content. Distinct
+    shapes are utilized to differentiate between movies and shows.
+    <br>
+    To further aid in the comparative analysis of movies and shows, a
+    histogram is displayed beneath the scatterplot. This histogram shows
+    the count of different Netflix media types. Interactivity is a
+    key feature here: when users select either of the bars in the
+    histogram, the scatterplot dynamically updates to display only
+    the data points corresponding to the selected media type. Moreover,
+    when users hover over a data point in the scatterplot, a tooltip
+    window appears, providing the name of the media. This design not
+    only enhances user engagement but also offers insightful and
+    tailored views of the data.</p>
 <div id="scatterPlotPopularityScore">
-    <form style="margin-bottom: 15px; margin-left: 240px;">
+    <form style="margin-bottom: 15px; text-align: center;">
         <span>Scale: </span><label for="scatterPlotPopRevScale"></label><select id="scatterPlotPopRevScale"
                                                                                 name="scale">
         <option value="linear">Linear</option>
