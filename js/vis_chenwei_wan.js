@@ -454,8 +454,8 @@ function toggleScatterPlotPopRevScale(scale) {
 
     // Transition the y-axis to the new scale
     yAxis.transition()
-        .duration(1000) // Duration of the transition in milliseconds
-        .call(d3.axisLeft(y).ticks(null, ".1s")); // Create the y-axis with the new log scale
+        .duration(1000)
+        .call(d3.axisLeft(y).ticks(null, ".1s"));
 
     function makeGridlinesY() {
         return d3.axisLeft(y)
@@ -604,6 +604,13 @@ function computeDistributionDensity(x, data, threshold) {
     return output;
 }
 
+function getPercentile(data, percentile) {
+    let dataCopy = JSON.parse(JSON.stringify(data));
+    data.sort((a, b) => a - b);
+    let index = Math.ceil((percentile / 100) * (data.length - 1));
+    return data[index];
+}
+
 function plotGenreImdbDistribution(rootG, data) {
     let x = d3.scaleLinear()
         .domain([0, 10.2])
@@ -638,8 +645,8 @@ function plotGenreImdbDistribution(rootG, data) {
 
     // color scale
     let contrast = d3.scaleLinear()
-        .domain([d3.min(allAvg), d3.median(allAvg), d3.max(allAvg)])
-        .range([0, 0.5, 1]);
+        .domain([d3.min(allAvg), getPercentile(allAvg, 25), d3.median(allAvg), getPercentile(allAvg, 75), d3.max(allAvg)])
+        .range([0, 0.25, 0.5, 0.75, 1]);
     let colorScale = d3.scaleSequential(d3.interpolateRdBu);
 
     // Add areas
@@ -712,8 +719,8 @@ function plotGenreImdbDistribution(rootG, data) {
         .attr("height", 20)
         .style("fill", "url(#linear-gradient)");
     let legendX = d3.scaleLinear()
-        .domain([d3.min(allAvg), d3.median(allAvg), d3.max(allAvg)])
-        .range([0, 150, 300]);
+        .domain([d3.min(allAvg), getPercentile(allAvg, 25), d3.median(allAvg), getPercentile(allAvg, 75), d3.max(allAvg)])
+        .range([0, 75, 150, 225, 300]);
     legendG.append("g")
         .attr("id", "dis-legend-x-axis")
         .attr("transform", "translate(0, 25)")
@@ -786,8 +793,8 @@ function transitionTo(density, name) {
         .range([0, -ctxChenwei.distribution.h]);
     // color scale
     let contrast = d3.scaleLinear()
-        .domain([d3.min(allAvg), d3.median(allAvg), d3.max(allAvg)])
-        .range([0, 0.5, 1]);
+        .domain([d3.min(allAvg), getPercentile(allAvg, 25), d3.median(allAvg), getPercentile(allAvg, 75), d3.max(allAvg)])
+        .range([0, 0.25, 0.5, 0.75, 1]);
     let colorScale = d3.scaleSequential(d3.interpolateRdBu);
 
     // areas
@@ -819,8 +826,8 @@ function transitionTo(density, name) {
 
     // transition for legend x-axis
     let legendX = d3.scaleLinear()
-        .domain([d3.min(allAvg), d3.median(allAvg), d3.max(allAvg)])
-        .range([0, 150, 300]);
+        .domain([d3.min(allAvg), getPercentile(allAvg, 25), d3.median(allAvg), getPercentile(allAvg, 75), d3.max(allAvg)])
+        .range([0, 75, 150, 225, 300]);
     rootG.select("#dis-legend-x-axis")
         .transition()
         .duration(1000)
