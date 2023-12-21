@@ -7,6 +7,8 @@
     <script type="text/javascript" src="js/d3.v7.min.js"></script>
     <script type="text/javascript" src="js/vis_chenwei_wan.js"></script>
     <script type="text/javascript" src="js/vis_wen_yang.js"></script>
+    <script type="text/javascript" src="js/vis_berenice_jaulmes.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/topojson@3.0.2/dist/topojson.min.js"></script>
     <style>
         html {
             font-family: 'Arial', sans-serif;
@@ -42,13 +44,39 @@
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
             text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.1);
         }
+
+        h2 {
+            font-family: 'Arial', sans-serif;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        h2 .subtitle {
+            color: #666666;
+            font-size: 14px;
+            display: block;
+        }
     </style>
 </head>
 
 <body onload="createVis()">
 <h1>Data Visualization for Netflix TV Shows and Movies</h1>
+<!-- Author: Berenice Jaulmes -->
+<div id="worldMap">
+    <h2>World Map of Netflix Movies and Shows<span class="subtitle">Author: Berenice Jaulmes</span></h2>
+    <p>
+        For the visualisation of the number of movies per country, we used an interactive world map. When hovering over
+        a country, the user can see its name and the total number of Netflix movies produced there. We chose to use a
+        blue and red color scheme to make the countries that produce few movies stand out from the countries for which
+        there is no data. This was more difficult to achieve with a one-color scheme. A special library was used for
+        this map, namely TopoJSON.
+    </p>
+</div>
+
 <!-- Author: Chenwei Wan -->
 <div id="genreImdbDistribution">
+    <h2>Ridgeline Plot for Review Score Distribution Analysis<span class="subtitle">Author: Chenwei Wan</span></h2>
     <p>In this section, we employ a ridgeline plot to elucidate the
         distribution of review scores across various genres. This
         visualization is enhanced by a diverging color scheme, which is
@@ -77,6 +105,7 @@
     </select>
     </form>
 </div>
+<h2>Disjoint Graph for Collaborative Relationships<span class="subtitle">Author: Chenwei Wan</span></h2>
 <p>As to the modelling of collaborative relationships between actors and
     directors, we first introduce our data-mining strategy. We define
     'popularity' for actors and directors based on their participation
@@ -101,6 +130,15 @@
     dynamics within the network.</p>
 <div id="actorsRelationship">
 </div>
+<div id="correlation">
+    <h2>Heatmap for General Feature Correlations<span class="subtitle">Author: Wen Yang</span></h2>
+    <p>This is the correlation between imdb score, tmdb score, release year, runtime and
+        tmdb popularity. Release year is slightly negatively correlated to both imbd score and runtime. It is reasonable
+        that consumers prefer recently released films or shows, and due to the technical constraints, very old films and
+        show has less runtime than recent productions.<br>
+    </p>
+</div>
+<h2>Scatterpoint Graph for Detailed Correlation Analysis<span class="subtitle">Author: Chenwei Wan</span></h2>
 <p>In this section, we present a scatterplot to analyze the correlation
     between popularity and review scores of media content. Considering
     the significant variation in the distribution of popularity data,
@@ -131,13 +169,28 @@
 
 <!-- Author: Wen Yang -->
 <div id="histogram" style="text-align: center;">
+    <h2>Histogram for Numerical Features<span class="subtitle">Author: Wen Yang</span></h2>
     <p>
-        Firstly, we decide to analyse the histogram of the numerical attributes in our dataset, inculding "imdb score",
-        "tmdb score", "imdb votes", "release year", "runtime", and "seasons". <br>
-        From the plot of release year, we found that most of the TV series or shows are produced in recent years,
-        especially after 2019.
+        Netflix dataset contains both numerical attributes and categorical attributes, in order to study the showing
+        general
+        distributional features for those attributes, we proposed to create histograms for numerical attributes.
+        Histograms
+        reflects the count of occurrences in the dataset for each logical range or bins.</p>
+    <p>
+        To deal with numerical attributes, the visualization for histogram is created with d3.histogram() for setting
+        the parameters and with d3 “rect” element for building the chart. The height of rectangles represents the count
+        of occurrence and the width represents the value of the attribute. The video on Netflix could be TV shows or
+        movies and the different natures of shows and movies, such as different runtimes, our histogram is designed in
+        an
+        interactive way by varying the colors of the rectangles representing each type, when chosen one type of the
+        video,
+        the corresponding histograms’ color can be highlighted. Also, by stacking the bars of histogram, this
+        visualization
+        could provide a global description for the numerical attributes in this dataset. In addition, we integrated a
+        slider
+        and a drop-down menu list for users to choose the attribute and choose the desired number of bins in the
+        histograms.
     </p>
-    <p>This is the histogram, please select an attribute or/and the number of bins </p>
     <!-- add a selecting list -->
     <g></g>
     <label for="attributeSelect">Select Attribute:</label>
@@ -149,52 +202,91 @@
         <span id="binsValue">10</span>
     </g>
 </div>
+<h2>Bar Charts for Categorical Attributes<span class="subtitle">Author: Wen Yang</span></h2>
+<p>
+    For the categorical attributes, bar charts are plotted to show the count of occurrences in Netflix dataset for each
+    category. To deal with categorical attributes, the visualization is realized by creating a bar chart using d3 ”rect”
+    element, with the height representing the count of occurrences of different categories. The position of each bar is
+    ordered by their count in descending order. This sorted bar chart allow us to know which category has the most
+    count, and provide a comparison between different categories.
+</p>
 <div id="histogram_categorical">
-    <p>This is the count by genres. The most popular genres of productions are comedy and drama, both of them have more
-        than 2000 production in our Netflix datasest. The genres with least number of productions are war, sports and
-        western, it can be concluded that Netflix is more focused on comedy or drama rather than western, war and sport
-        type of content. This could be the result of the influence from costumers' interest and from the producers'
-        working field.</p>
-</div>
-<div id="treemap_categorical">
-    <p>This is the count by genres presented in a tree map. </p>
-</div>
-<div id="GenreByTime">
-    <p>
-        Afterwards, the percentage of production for each genre by time is analysed. Time range is from 1953 to 2021,
-        since there isn't any data for 1949 to 1953 this period is ignored when we process the data. <br>
-        Some genres has been produced throughout time, such as crime or drama; some genres started to be produced later,
-        such as animation or science fictions, they begins to make this type of productions after the application of
-        computers in film industry or TV series studios. Some genres only appears during some specific time period, for
-        example, most western genres are added to Netflix database around 1960s due to their representation of cultural
-        sentiments.
-    </p>
-</div>
-<div id="GenreNet">
-    <p>
-        a network of genres
-    </p>
+    <p>This graph presents the number of productions in each genres. The most popular genres of productions are comedy
+        and drama, both of them have more than 2000 production in our Netflix datasest. The genres with least number
+        of productions are war, sports and western, it can be concluded that Netflix is more focused on comedy or drama
+        rather than western, war and sport type of content. This could be the result of the influence from costumers’
+        interest and from the producers’ working field.</p>
 </div>
 <div id="histogram_CountCountry">
     <p>
-        This is the count by Country, the top 30 countires with most number of productions in Netflix dataset are
-        plotted. The united states produced most, more than 3 times than the second one (India), and United Kingdom (
-        Great Britain) ranked number 3. Since Netflix is an American company, it is expected that it covers more
-        productions from US and English-speaking countries.
+        We calculated the number of productions in each country and show the top 30 countries in terms of their number
+        of productions. The united states produced most, more than 3 times than the second one (India), and
+        United Kingdom (Great Britain) ranked number 3. Since Netflix is an American company, it is expected that it
+        covers more productions from US and English-speaking countries.
     </p>
 </div>
-<div id="correlation">
-    <p>This is the correlation between imdb score, tmdb score, release year, runtime and
-        tmdb popularity. Release year is slightly negatively correlated to both imbd score and runtime. It is reasonable
-        that consumers prefer recently released films or shows, and due to the technical constraints, very old films and
-        show has less runtime than recent productions.<br>
+<div id="treemap_categorical">
+    <h2>Treemap for Genres<span class="subtitle">Author: Wen Yang</span></h2>
+    <p>Treemap is a visualization method for displaying hierarchical data. It uses nested rectangles to represent the
+        branches of a tree diagram. Each rectangle has an area proportional to the amount of data it represents. In our
+        case, we have limited hierarchical structure in our dataset, as a result, each genre is represented as one leaf
+        node
+        and they all have the same level of hierarchy, all of them are connected to the root node in this graph.
+        The rectangles are filled with different colors to differentiate each genre. With a text element on each
+        rectangle
+        showing the genre and its count, treemap allows to easily identify the most and the least popular genres. Some
+        genre with a very small count is represented by a very small rectangle, and the text will exceed the border of
+        the
+        rectangle, therefore, a clip function is used to constrain the location of the text element. This type of could
+        be even
+        more useful when illustrating hierarchical data.</p>
+</div>
+<div id="GenreByTime">
+    <h2>Stacked Area Chart for Genres over Time<span class="subtitle">Author: Wen Yang</span></h2>
+    <p>
+        Stacked area chart displays the evolution of the value of several groups on the same graphic. The values of each
+        group are displayed on top of each other, which allows to check on the same figure the evolution of the
+        importance
+        of each group
+    </p>
+    <p>
+        In this figure, the percentage of production of each genre throughout time is analysed. The fully-stacked height
+        of the topmost line corresponds to the total when summing across all genres, in our case is 100%. Comparing
+        the heights of each segment of the curve provides a general idea of how each genre compares to the other in
+        their
+        contributions to the total. In practice, this chart loses information about the trend of the absolute counts but
+        helps
+        to bring out the comparison of relative contributions between genres. The data are prepossessed before plotting
+        the chart. Firstly, an aggregating by genre is performed, then we compute the sum of each time period and obtain
+        the percentage of each genre during this period. Secondly, area charts are generated with d3.stack() and
+        d3.area()
+        function draw the area and stack areas together. At last, each genre is assigned with a different color by a
+        customed
+        color scale to differentiate them between each other.
     </p>
 </div>
+<div id="GenreNet">
+    <h2>Chord Diagram for Genre Overlaps<span class="subtitle">Author: Wen Yang</span></h2>
+    <p>
+        The co-appearance of different genres is also studied. One movie or one TV show may belongs to several genres at
+        the same time. For this kind of analysis, we propose to use chord diagram. A chord diagram represents
+        connections
+        between several nodes. In our case, each genre is represented by a node. And it is shown as a fragment on the
+        outer
+        part of the circular layout. The length of this circular fragment corresponds to the percentage of the count for
+        this
+        genre among the summation of all counts. And each genre has a different color, which makes them distinguished
+        from each other. Then, arcs are drawn between each nodes. The width of the arc is proportional to the count of
+        co-appearance the between two genres.
+    </p>
+</div>
+
 
 <script>
     function createVis() {
         createVisChenwei();
-        createVizWen()
+        createVizWen();
+        createVizBer();
     }
 </script>
 </body>
